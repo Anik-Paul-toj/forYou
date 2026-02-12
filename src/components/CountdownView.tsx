@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import gsap from "gsap";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { siteData } from "../data/siteData";
 
 interface TimeUnit {
@@ -24,6 +24,7 @@ export default function CountdownView({ onComplete }: { onComplete: () => void }
   const titleRef = useRef<HTMLHeadingElement>(null);
   const unitsRef = useRef<(HTMLDivElement | null)[]>([]);
   const messageRef = useRef<HTMLParagraphElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const [timeLeft, setTimeLeft] = useState<TimeUnit[]>([
     { value: 0, label: "Days" },
@@ -33,6 +34,8 @@ export default function CountdownView({ onComplete }: { onComplete: () => void }
   ]);
   const [stars, setStars] = useState<Star[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     const generated: Star[] = Array.from({ length: 80 }, (_, i) => ({
@@ -76,6 +79,55 @@ export default function CountdownView({ onComplete }: { onComplete: () => void }
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [onComplete]);
+
+  // Audio handling
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const playAudio = async () => {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.log("Autoplay blocked");
+        setIsPlaying(false);
+      }
+    };
+
+    playAudio();
+
+    // Try to play on first interaction
+    const handleInteraction = () => {
+      if (audio.paused && !isMuted) {
+        playAudio();
+      }
+    };
+
+    window.addEventListener("click", handleInteraction, { once: true });
+    window.addEventListener("touchstart", handleInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, [isMuted]);
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isMuted) {
+      audio.muted = false;
+      audio.play().catch(() => {});
+      setIsMuted(false);
+      setIsPlaying(true);
+    } else {
+      audio.muted = true;
+      setIsMuted(true);
+      setIsPlaying(false);
+    }
+  };
 
   useEffect(() => {
     if (!mounted) return;
@@ -138,6 +190,29 @@ export default function CountdownView({ onComplete }: { onComplete: () => void }
       </div>
 
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(168,85,247,0.12)_0%,_transparent_60%)]" />
+
+      {/* Countdown Music */}
+      <audio
+        ref={audioRef}
+        loop
+        src="/music/countdownPageMusic.mpeg"
+        preload="auto"
+      />
+
+      {/* Music Toggle */}
+      <button
+        onClick={toggleMute}
+        className="fixed top-6 right-6 z-50 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/20 transition-all"
+        aria-label={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+      </button>
+
+      {!isPlaying && !isMuted && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-pulse text-white/50 text-sm">
+          Tap anywhere to play music 🎵
+        </div>
+      )}
 
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <div className="mb-4">
