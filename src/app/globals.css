@@ -1,8 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Dancing+Script:wght@400..700&display=swap');
 @import "tailwindcss";
 
+/* Lenis smooth scroll (inlined — Turbopack can't resolve lenis/css) */
+html.lenis, html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+.lenis.lenis-autoToggle { transition-property: overflow; transition-duration: 1ms; transition-behavior: allow-discrete; }
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-playfair: 'Playfair Display', serif;
+  --font-dancing: 'Dancing Script', cursive;
+  --background: #0d0608;
+  --foreground: #f5e6ea;
 }
 
 @theme inline {
@@ -12,15 +24,205 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(244, 63, 94, 0.4);
+  color: white;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0608;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(244, 63, 94, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 63, 94, 0.5);
+}
+
+/* Floating hearts animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-10vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.heart-float {
+  animation: float-up linear infinite;
+  color: #f43f5e;
+}
+
+/* Sparkle animation */
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sparkle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+/* Heart burst for quiz correct answer */
+@keyframes heart-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(-50% + var(--tx, 0px)),
+      calc(-50% + var(--ty, -100px))
+    ) scale(1);
+    opacity: 0;
+  }
+}
+
+.heart-burst {
+  animation: heart-burst 1.2s ease-out forwards;
+}
+
+/* Quiz celebration - hearts rising from bottom to top */
+@keyframes celebration-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--heart-opacity, 0.5);
+    transform: translateY(-10%) translateX(calc(var(--drift, 0px) * 0.2)) scale(0.8) rotate(15deg);
+  }
+  50% {
+    opacity: var(--heart-opacity, 0.5);
+    transform: translateY(-50vh) translateX(var(--drift, 0px)) scale(1) rotate(-10deg);
+  }
+  100% {
+    transform: translateY(-110vh) translateX(calc(var(--drift, 0px) * -0.5)) scale(0.6) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+.celebration-heart {
+  animation: celebration-rise ease-in-out infinite;
+}
+
+.celebration-sparkle {
+  animation: celebration-rise ease-in-out infinite;
+}
+
+/* Lenis handles smooth scroll — do not set scroll-behavior: smooth */
+
+/* Backface hidden utility */
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Countdown page - star twinkle */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.countdown-star {
+  animation: twinkle ease-in-out infinite;
+}
+
+/* Countdown colon pulse */
+@keyframes colon-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.countdown-pulse {
+  animation: colon-pulse 1s ease-in-out infinite;
+}
+
+/* Countdown heartbeat */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  56% { transform: scale(1); }
+}
+
+.countdown-heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* Playlist waveform bars */
+@keyframes waveform {
+  0%, 100% { height: 20%; }
+  25% { height: 80%; }
+  50% { height: 40%; }
+  75% { height: 90%; }
+}
+
+.waveform-bar {
+  animation: waveform 1.2s ease-in-out infinite;
+}
+
+/* Infinite marquee scroll */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Scroll columns - vertical continuous scroll */
+@keyframes scroll-column-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-33.333%); }
+}
+
+@keyframes scroll-column-down {
+  0% { transform: translateY(-33.333%); }
+  100% { transform: translateY(0); }
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
