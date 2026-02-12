@@ -3,13 +3,14 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { ArrowLeft, Music, Play, Pause, ExternalLink, Heart } from "lucide-react";
+import { ArrowLeft, Music, Play, Pause, Heart } from "lucide-react";
 import { siteData } from "../../data/siteData";
 
 export default function PlaylistPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const vinylRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -37,27 +38,58 @@ export default function PlaylistPage() {
         { scale: 1, opacity: 1, rotation: 0, duration: 0.8, ease: "back.out(1.5)" },
         "-=0.5"
       );
-
-      // Vinyl rotation animation
-      gsap.to(vinylRef.current, {
-        rotation: "+=360",
-        duration: 3,
-        repeat: -1,
-        ease: "none",
-        paused: true,
-      });
     }, containerRef);
 
     return () => ctx.revert();
   }, [mounted]);
 
+  // Handle vinyl rotation animation based on playing state
+  useEffect(() => {
+    if (!vinylRef.current) return;
+    
+    if (isPlaying) {
+      gsap.to(vinylRef.current, {
+        rotation: "+=360",
+        duration: 3,
+        repeat: -1,
+        ease: "none",
+        overwrite: "auto"
+      });
+    } else {
+      gsap.to(vinylRef.current, {
+        rotation: vinylRef.current.style.transform ? "+=10" : 0, // gently stop
+        duration: 0.5,
+        overwrite: "auto",
+        onComplete: () => {
+           // stop rotation
+        }
+      });
+    }
+  }, [isPlaying]);
+
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   const selectTrack = (index: number) => {
     setCurrentTrack(index);
     setIsPlaying(true);
+    if (audioRef.current) {
+      // Small delay to ensure source updates
+      setTimeout(() => audioRef.current?.play(), 50);
+    }
+  };
+
+  const handleEnded = () => {
+    const nextIndex = (currentTrack + 1) % playlist.length;
+    selectTrack(nextIndex);
   };
 
   if (!mounted) return null;
@@ -65,6 +97,12 @@ export default function PlaylistPage() {
   return (
     <div ref={containerRef} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0608] via-[#1a0a10] to-[#0d0608]" />
+
+      <audio
+        ref={audioRef}
+        src={playlist[currentTrack].audioSrc}
+        onEnded={handleEnded}
+      />
 
       {/* Back button */}
       <Link href="/" className="absolute top-6 left-6 z-20 flex items-center gap-2 text-rose-300/60 hover:text-rose-300 transition-colors">
@@ -89,49 +127,55 @@ export default function PlaylistPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* Vinyl Player */}
-          <div className="flex justify-center">
+          {/* Vinyl Player Visual */}
+          <div className="flex flex-col items-center justify-center">
             <div
               ref={vinylRef}
               className="relative w-64 h-64 md:w-80 md:h-80 opacity-0"
             >
               {/* Vinyl disc */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-900 to-black shadow-2xl">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-900 to-black shadow-2xl border-4 border-gray-900">
                 {/* Grooves */}
-                <div className="absolute inset-4 rounded-full border border-gray-800" />
-                <div className="absolute inset-8 rounded-full border border-gray-800" />
-                <div className="absolute inset-12 rounded-full border border-gray-800" />
-                <div className="absolute inset-16 rounded-full border border-gray-800" />
+                <div className="absolute inset-4 rounded-full border border-gray-800/50" />
+                <div className="absolute inset-8 rounded-full border border-gray-800/50" />
+                <div className="absolute inset-12 rounded-full border border-gray-800/50" />
+                <div className="absolute inset-16 rounded-full border border-gray-800/50" />
 
                 {/* Label */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-rose-600 to-pink-600 flex items-center justify-center">
-                    <Heart className="w-10 h-10 text-white" fill="currentColor" />
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-rose-600 to-pink-600 flex items-center justify-center shadow-inner relative overflow-hidden">
+                    <Heart className="w-12 h-12 text-white/90 drop-shadow-md" fill="currentColor" />
+                    {/* Spinning sheen effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-50" />
                   </div>
                 </div>
 
                 {/* Center hole */}
-                <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-black rounded-full -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-black rounded-full -translate-x-1/2 -translate-y-1/2 border border-gray-700" />
               </div>
+            </div>
 
-              {/* Play button overlay */}
+            {/* Controls */}
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <h3 className="text-xl font-medium text-white text-center">
+                {playlist[currentTrack].title}
+              </h3>
+              
               <button
                 onClick={togglePlay}
-                className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 hover:opacity-100 transition-opacity"
+                className="w-16 h-16 rounded-full bg-white text-rose-600 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               >
-                <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
-                  {isPlaying ? (
-                    <Pause className="w-8 h-8 text-rose-600" />
-                  ) : (
-                    <Play className="w-8 h-8 text-rose-600 ml-1" />
-                  )}
-                </div>
+                {isPlaying ? (
+                  <Pause className="w-6 h-6 fill-current" />
+                ) : (
+                  <Play className="w-6 h-6 fill-current ml-1" />
+                )}
               </button>
             </div>
           </div>
 
           {/* Track List */}
-          <div className="bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] rounded-3xl p-6">
+          <div className="bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] rounded-3xl p-6 h-[400px] overflow-y-auto custom-scrollbar">
             <div className="space-y-2">
               {playlist.map((track, index) => (
                 <div
@@ -155,18 +199,15 @@ export default function PlaylistPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium truncate">{track.title}</h3>
-                    <p className="text-rose-200/40 text-sm">{track.artist}</p>
+                    <h3 className={`font-medium truncate ${currentTrack === index ? "text-rose-300" : "text-white"}`}>
+                      {track.title}
+                    </h3>
                   </div>
-                  <a
-                    href={track.spotifyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-rose-400/60 hover:text-rose-400 transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+                  {currentTrack === index && (
+                    <div className="text-rose-400">
+                      {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

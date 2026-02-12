@@ -111,11 +111,11 @@ export default function ReasonsPage() {
             key={i}
             className="absolute heart-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              fontSize: `${Math.random() * 16 + 10}px`,
-              animationDelay: `${Math.random() * 20}s`,
-              animationDuration: `${Math.random() * 10 + 15}s`,
-              opacity: Math.random() * 0.2 + 0.05,
+              left: `${((i * 17 + 5) % 90) + 5}%`,
+              fontSize: `${((i * 13 + 7) % 20) + 10}px`,
+              animationDelay: `${((i * 7) % 20)}s`,
+              animationDuration: `${((i * 11) % 10) + 15}s`,
+              opacity: ((i * 3) % 5 + 1) / 20 + 0.05,
             }}
           >
             ♥
