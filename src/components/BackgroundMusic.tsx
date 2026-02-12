@@ -65,7 +65,7 @@ export default function BackgroundMusic() {
     <>
       <audio
         ref={audioRef}
-        src="/assets/music/mainPage.mp3"
+        src="/music/mainPage.mp3"
         loop
         preload="auto"
       />
