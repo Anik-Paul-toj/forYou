@@ -11,7 +11,6 @@ export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const dateRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLButtonElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const sparklesRef = useRef<HTMLDivElement>(null);
 
@@ -70,14 +69,6 @@ export default function Hero() {
         { y: 30, opacity: 0, scale: 0.8 },
         { y: 0, opacity: 1, scale: 1, duration: 0.6 },
         "-=0.3"
-      );
-
-      // CTA button
-      tl.fromTo(
-        ctaRef.current,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6 },
-        "-=0.2"
       );
 
       // Bouncing arrow
@@ -157,18 +148,6 @@ export default function Hero() {
         >
           {siteData.hero.date}
         </p>
-
-        {/* CTA Button */}
-        <div>
-          <button
-            ref={ctaRef}
-            onClick={scrollToTimeline}
-            className="group relative px-10 py-4 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full text-white font-medium text-lg tracking-wide opacity-0 transition-all duration-300 hover:shadow-[0_0_40px_rgba(244,63,94,0.4)] active:shadow-[0_0_40px_rgba(244,63,94,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <span className="relative z-10">{siteData.hero.ctaText}</span>
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
-        </div>
       </div>
 
       {/* Scroll indicator */}

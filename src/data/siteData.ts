@@ -3,7 +3,6 @@ export const siteData = {
     title: "Happy Valentine's Day",
     subtitle: "To the one who makes every day feel like a celebration of love.",
     date: "February 14, 2026",
-    ctaText: "Begin Our Journey",
   },
   timeline: [
     {

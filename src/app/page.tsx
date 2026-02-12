@@ -13,11 +13,13 @@ import Explore from "../components/Explore";
 import LoveLetter from "../components/LoveLetter";
 import FloatingHearts from "../components/FloatingHearts";
 import CursorHearts from "../components/CursorHearts";
+import BackgroundMusic from "../components/BackgroundMusic";
 
 export default function Home() {
   return (
     <main className="relative">
       {/* Global overlays */}
+      <BackgroundMusic />
       <FloatingHearts />
       <CursorHearts />
 
